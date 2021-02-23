@@ -38,6 +38,15 @@ test_that("when patients is NULL", {
   expect_equal(nrow(mat), 457)
 })
 
+#test inferred variant type column
+test_that("inferred Variant_Type column", {
+  vartype = mut$Variant_Type
+  tt <- mut %>% select(!(Variant_Type)) %>% check_maf_input()
+  expect_equal(sum(diag(table(tt$Variant_Type, vartype))),length(vartype))
+
+})
+
+
 #specify.plat, also checks patients
 test_that("read in patients with specify.plat", {
   bin.mut <- binmat(patients = patients,maf = mut,SNP.only = F,include.silent = F, specify.plat = T, rm.empty = FALSE)
@@ -74,13 +83,38 @@ test_that("no impact samples",{
   expect_equal(nrow(bin.mut),454)
 })
 
+#read in cna alone
+test_that("read in cna",{
+
+  ptgsub = gsub("-", "\\.", patients)
+  ttcna = cna[,ptgsub]
+  ttcna[ttcna < -1] = -1; ttcna[ttcna > 1] = 1
+  bin.cn = binmat(patients = patients, cna=cna, cna.relax=TRUE)
+  expect_equal(ncol(bin.cn),sum(apply(ttcna, 1, function(x) length(unique(x[x!=0])))))
+  expect_equivalent(table(bin.cn$PTEN.Del)[2],6)
+})
+
+#read in fusion alone
+
+#test set.plat
+test_that("check set.plat",{
+
+  bin.mut = binmat(patients = patients, maf = mut)
+  bin.mut2 = binmat(patients = patients, maf = mut, set.plat = "341")
+  expect_equal(length(which(as.vector(bin.mut2)==1)), length(which(as.vector(bin.mut[,colnames(bin.mut2)])==1)))
+
+  #bin.mut3 = binmat(patients = patients, maf = mut, set.plat = "410")
 
 
-#and set.plat  - do we need?
 
+
+})
+
+
+#check pathway
 #check from 140-145? do we need?
 #line number 154
-#read in fusions
+
 
 
 

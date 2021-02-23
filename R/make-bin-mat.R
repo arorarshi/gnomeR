@@ -122,27 +122,7 @@ binmat <- function(patients=NULL, maf = NULL, mut.type = "SOMATIC",SNP.only = FA
 
     # quick data checks #
     maf <- check_maf_input(maf)
-    # if(is.na(match("Tumor_Sample_Barcode",colnames(maf))))
-    #   stop("The MAF file inputted is missing a patient name column. (Tumor_Sample_Barcode)")
-    # if(is.na(match("Hugo_Symbol",colnames(maf))))
-    #   stop("The MAF file inputted is missing a gene name column. (Hugo_Symbol)")
-    # if(is.na(match("Variant_Classification",colnames(maf))))
-    #   stop("The MAF file inputted is missing a variant classification column. (Variant_Classification)")
-    # if(is.na(match("Mutation_Status",colnames(maf)))){
-    #   warning("The MAF file inputted is missing a mutation status column (Mutation_Status). It will be assumed that
-    #         all variants are of the same type (SOMATIC/GERMLINE).")
-    #   maf$Mutation_Status <- rep("SOMATIC",nrow(maf))
-    # }
-    # if(is.na(match("Variant_Type",colnames(maf)))){
-    #   warning("The MAF file inputted is missing a mutation status column (Variant_Type). It will be assumed that
-    #         all variants are of the same type (SNPs).")
-    #   maf$Variant_Type <- rep("SNPs",nrow(maf))
-    # }
-
-    # filter/define patients #
-    # if(!is.null(patients)) maf <- maf[maf$Tumor_Sample_Barcode %in% patients,]
-    # else patients <- as.character(unique(maf$Tumor_Sample_Barcode))
-    if(oncokb)
+       if(oncokb)
       maf <- oncokb(maf = maf, fusion = NULL, cna = NULL, token = token,...)$maf_oncokb %>%
         filter(.data$ONCOGENIC %in% keep_onco)
     # set maf to maf class #
@@ -407,14 +387,14 @@ createbin.maf <- function(obj, patients, mut.type, cna.binary, SNP.only, include
   maf$Hugo_Symbol <- as.character(maf$Hugo_Symbol)
 
   # # clean gen dat #
-  if(SNP.only) SNP.filt = "SNP"
+  if(SNP.only) {SNP.filt = "SNP"; message("Only keeping SNPs (default)")}
   else SNP.filt = unique(maf$Variant_Type)
 
-  if(!include.silent) Variant.filt = "Silent"
+  if(!include.silent) {Variant.filt = "Silent"; message("Removing Silent mutations if any (default)")}
   else Variant.filt = ""
 
   if(tolower(mut.type) == "all") Mut.filt = unique(maf$Mutation_Status)
-  else Mut.filt = mut.type
+  else {Mut.filt = mut.type; message(paste0("Only keeping ", mut.type, " mutations"))}
 
   maf <- as_tibble(maf) %>%
     filter(.data$Variant_Classification != Variant.filt,
