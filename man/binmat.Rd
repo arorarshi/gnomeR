@@ -3,6 +3,7 @@
 \name{binmat}
 \alias{binmat}
 \title{binmat
+\\%lifecycle{stable}
 Enables creation of a binary matrix from a maf file with
 a predefined list of patients (rows are patients and columns are genes)}
 \usage{
@@ -20,11 +21,13 @@ binmat(
   set.plat = NULL,
   rm.empty = TRUE,
   pathway = FALSE,
+  recode.aliases = TRUE,
   col.names = c(Tumor_Sample_Barcode = NULL, Hugo_Symbol = NULL, Variant_Classification
     = NULL, Mutation_Status = NULL, Variant_Type = NULL),
   oncokb = FALSE,
   keep_onco = c("Oncogenic", "Likely Oncogenic", "Predicted Oncogenic"),
   token = "",
+  sample_panels = NULL,
   ...
 )
 }
@@ -51,18 +54,22 @@ Default is NULL.}
 \item{cna.binary}{A boolean argument specifying if the cna events should be enforced as binary. In which case separate columns for
 amplifications and deletions will be created.}
 
-\item{cna.relax}{for cna data only enables to count both gains and shallow deletions as amplifications and deletions respectively.}
+\item{cna.relax}{By default this argument is set to FALSE, where only deep deletions (-2) and amplifications (2) will be annotated as events.
+When set to FTRUE all deletions (-1 shallow and -2 deep) are counted as an event same for all gains (1 gain, 2 amplification) as an event.}
 
 \item{specify.plat}{boolean specifying if specific IMPACT platforms should be considered. When TRUE NAs will fill the cells for genes
 of patients that were not sequenced on that plaform. Default is TRUE.}
 
 \item{set.plat}{character argument specifying which IMPACT platform the data should be reduced to if specify.plat is set to TRUE.
-Options are "341" and "410". Default is NULL.}
+Options are "341", "410" and "468. Default is NULL.}
 
 \item{rm.empty}{boolean specifying if columns with no events founds should be removed. Default is TRUE.}
 
 \item{pathway}{boolean specifying if pathway annotation should be applied. If TRUE, the function will return a supplementary binary
 dataframe with columns being each pathway and each row being a sample. Default is FALSE.}
+
+\item{recode.aliases}{bolean specifying if automated gene name alias matching should be done. Default is TRUE. When TRUE
+the function will check for genes that may have more than 1 name in your data using the aliases im gnomeR::impact_gene_info alias column}
 
 \item{col.names}{character vector of the necessary columns to be used. By default: col.names = c(Tumor_Sample_Barcode = NULL,
 Hugo_Symbol = NULL, Variant_Classification = NULL, Mutation_Status = NULL, Variant_Type = NULL)}
@@ -75,6 +82,10 @@ Hugo_Symbol = NULL, Variant_Classification = NULL, Mutation_Status = NULL, Varia
 
 \item{token}{the token affiliated to your oncoKB account.}
 
+\item{sample_panels}{A dataframe containing the sample ids corresponding to the patients argument in the first
+column and their corresponding genomic panel. At the moment gnomeR can handle panels from the following centers:
+MSKCC, DFCI, VICC and UHN. See objects impact_gene_info and panel_names for more information.}
+
 \item{...}{Further arguments passed to the oncokb() function such a token}
 }
 \value{
@@ -82,6 +93,7 @@ mut : a binary matrix of mutation data
 }
 \description{
 binmat
+\\%lifecycle{stable}
 Enables creation of a binary matrix from a maf file with
 a predefined list of patients (rows are patients and columns are genes)
 }
